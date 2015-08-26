@@ -46,6 +46,9 @@
                             </mask>
                         </variation>
                     </view>
+                    <connections>
+                        <outlet property="graphView" destination="f3u-Sn-scO" id="lCD-XP-TRf"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>

@@ -47,7 +47,9 @@ class ETKVGraphView: UIView {
         
         graph.width = rect.width
         graph.height = rect.height
+        
+        graph.drawGradient(UIColor.yellowColor().CGColor, endColor: UIColor.redColor().CGColor)
   
-        graph.drawColoredSingleLine([0.1, 2, 3.4, 1, 0.34], color: Colors().colors[1])
+        graph.drawColoredSingleLine([10000000, 0.1, 2, 3.4, 1, 0.34, 1000], color: Colors().colors[1])
     }
 }

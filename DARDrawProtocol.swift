@@ -58,7 +58,6 @@ struct Graph {
             gradient,
             startPoint,
             endPoint,
-            
             CGGradientDrawingOptions.DrawsBeforeStartLocation)
     }
     

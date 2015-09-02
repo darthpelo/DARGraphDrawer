@@ -27,59 +27,10 @@ struct Colors {
     ]
 }
 
+//MARK: - Main struct
 /// Graph management
 struct Graph {
-    /**
-    Draws background of the graph with a gradient
-    
-    :param: startColor  The start color of the gradient
-    :param: endColor    The last color of the gradient
-    */
-    func drawGradient(startColor: CGColor, endColor: CGColor) {
-        //get the current context
-        let context = UIGraphicsGetCurrentContext()
-        let colors = [startColor, endColor]
-        
-        //set up the color space
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        
-        //set up the color stops
-        let colorLocations:[CGFloat] = [0.0, 1.0]
-        
-        //create the gradient
-        let gradient = CGGradientCreateWithColors(colorSpace,
-            colors,
-            colorLocations)
-        
-        //draw the gradient
-        let startPoint = CGPoint.zero
-        let endPoint = CGPoint(x:0, y:height)
-        CGContextDrawLinearGradient(context,
-            gradient,
-            startPoint,
-            endPoint,
-            CGGradientDrawingOptions.DrawsBeforeStartLocation)
-    }
-    
-    /**
-    Create UILabel respect a CGPoint
-    
-    :param: center  The center of the UILabel
-    :param: value   The text of the UILabel
-    
-    :returns: tag   The UILabel
-    */
-    func drawGraphLineLabels(center: CGPoint, value: String) -> UILabel {
-        let tag = UILabel(frame: CGRectMake(0, 0, 50, 18))
-        tag.text = value
-        tag.textColor = UIColor.whiteColor()
-        tag.textAlignment = NSTextAlignment.Center
-        tag.font = UIFont.boldSystemFontOfSize(12)
-        tag.center = center
-        return tag
-    }
-    
-    /// Return X point according to view size and graph margin
+    /// Return X axix point according to graph view size and graph margin
     func getColumnXPoint(points: [Double], column:Int) -> CGFloat {
         //Calculate gap between points
         let spacer = (width - margin * 2 - 4) /
@@ -136,11 +87,8 @@ extension Graph {
     :param: graphs An array of [Double]
     */
     func drawColoredMultiLines(graphs:[[Double]]) {
-        for i in 0..<graphs.count {
-            let list = graphs[i]
-            
-            drawColoredSingleLine(list, color: Colors().colors[i])
-        }
+        var i = 0
+        _ = graphs.map{drawColoredSingleLine($0, color: Colors().colors[i++])}
     }
     
     /**
@@ -163,14 +111,14 @@ extension Graph {
         
         //add points for each item in the graphPoints array
         //at the correct (x, y) for the point
-        for i in 1..<points.count {
-            let yp = CGFloat(points[i])
+        _ = (1 ..< points.count).map({
+            let yp = CGFloat(points[$0])
             
-            let nextPoint = CGPoint(x:getColumnXPoint(points, column: i),
+            let nextPoint = CGPoint(x:getColumnXPoint(points, column: $0),
                 y:getColumnYPoint(log10(yp)))
             
             cgpoints.append(nextPoint)
-        }
+        })
         
         let curve = Curve(corners: cgpoints, color: color)
         let diagram = Diagram(elements: [curve])
@@ -184,21 +132,71 @@ extension Graph {
     Draws two circles on start and end of a line
     */
     func drawCirclesStartEnd(startPoint: CGPoint, endPoint: CGPoint) {
-        var point = startPoint
-        point.x -= 5.0/2
-        point.y -= 5.0/2
+        var sPoint = startPoint
+        sPoint.x -= 5.0/2
+        sPoint.y -= 5.0/2
         
-        var circle = Circle(origin: point, diameter: 7.0, color: UIColor(hex: Colors.Color.ColorOne.rawValue, alpha: 1.0))
+        var ePoint = endPoint
+        ePoint.x -= 5.0/2
+        ePoint.y -= 5.0/2
         
-        circle.draw()
+        let diagram = Diagram(elements: [
+                Circle(origin: sPoint, diameter: 7.0, color: UIColor(hex: Colors.Color.ColorOne.rawValue, alpha: 1.0)),
+                Circle(origin: endPoint, diameter: 7.0, color: UIColor(hex: Colors.Color.ColorOne.rawValue, alpha: 1.0))
+            ])
+        diagram.draw(UIBezierPath())
+    }
+}
+
+extension Graph {
+    /**
+    Create an UILabel respect a CGPoint
+    
+    :param: center  The center of the UILabel
+    :param: value   The text of the UILabel
+    
+    :returns: tag   The UILabel
+    */
+    func drawGraphLineLabels(center: CGPoint, value: String) -> UILabel {
+        let tag = UILabel(frame: CGRectMake(0, 0, 50, 18))
+        tag.text = value
+        tag.textColor = UIColor.whiteColor()
+        tag.textAlignment = NSTextAlignment.Center
+        tag.font = UIFont.boldSystemFontOfSize(12)
+        tag.center = center
+        return tag
+    }
+    
+    /**
+    Draws background of the graph with a gradient
+    
+    :param: startColor  The start color of the gradient
+    :param: endColor    The last color of the gradient
+    */
+    func drawGradient(startColor: CGColor, endColor: CGColor) {
+        //get the current context
+        let context = UIGraphicsGetCurrentContext()
+        let colors = [startColor, endColor]
         
-        point = endPoint
-        point.x -= 5.0/2
-        point.y -= 5.0/2
+        //set up the color space
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
         
-        circle = Circle(origin: endPoint, diameter: 7.0, color: UIColor(hex: Colors.Color.ColorOne.rawValue, alpha: 1.0))
+        //set up the color stops
+        let colorLocations:[CGFloat] = [0.0, 1.0]
         
-        circle.draw()
+        //create the gradient
+        let gradient = CGGradientCreateWithColors(colorSpace,
+            colors,
+            colorLocations)
+        
+        //draw the gradient
+        let startPoint = CGPoint.zero
+        let endPoint = CGPoint(x:0, y:height)
+        CGContextDrawLinearGradient(context,
+            gradient,
+            startPoint,
+            endPoint,
+            CGGradientDrawingOptions.DrawsBeforeStartLocation)
     }
 }
 
@@ -231,7 +229,7 @@ struct Line : Drawable {
     var color: UIColor
 }
 
-struct Circle {
+struct Circle : Drawable {
     func draw() {
         let circle = UIBezierPath(ovalInRect: CGRect(origin: origin, size: CGSize(width: diameter, height: diameter)))
         circle.fill()

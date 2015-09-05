@@ -212,13 +212,15 @@ protocol Renderer {
 
 protocol Drawable {
     /// Issues drawing commands to `renderer` to represent `self`.
-    func draw(renderer: Renderer)
+    func draw(renderer: Renderer?)
 }
 
 struct Line : Drawable {
-    func draw(renderer: Renderer) {
-        renderer.moveTo(startPoint)
-        renderer.lineTo(endPoint)
+    func draw(renderer: Renderer?) {
+        guard let rend = renderer else { return }
+        
+        rend.moveTo(startPoint)
+        rend.lineTo(endPoint)
         
         color.setStroke()
         color.setFill()
@@ -230,7 +232,7 @@ struct Line : Drawable {
 }
 
 struct Circle : Drawable {
-    func draw() {
+    func draw(renderer: Renderer?) {
         let circle = UIBezierPath(ovalInRect: CGRect(origin: origin, size: CGSize(width: diameter, height: diameter)))
         circle.fill()
     }
@@ -241,10 +243,12 @@ struct Circle : Drawable {
 }
 
 struct Curve : Drawable {
-    func draw(renderer: Renderer) {
-        renderer.moveTo(corners.first!)
+    func draw(renderer: Renderer?) {
+        guard let rend = renderer else { return }
+        
+        rend.moveTo(corners.first!)
         for p in corners {
-            renderer.lineTo(p)
+            rend.lineTo(p)
         }
         
         color.setStroke()
@@ -257,9 +261,11 @@ struct Curve : Drawable {
 
 /// A group of `Drawable`s
 struct Diagram : Drawable {
-    func draw(renderer: Renderer) {
+    func draw(renderer: Renderer?) {
+        guard let rend = renderer else { return }
+        
         for f in elements {
-            f.draw(renderer)
+            f.draw(rend)
         }
     }
     
@@ -270,6 +276,7 @@ struct Diagram : Drawable {
     var elements: [Drawable] = []
 }
 
+/// Extend UIBezierPath to support Renderer protocol
 extension UIBezierPath: Renderer {
     func moveTo(position: CGPoint) {
         moveToPoint(position)
